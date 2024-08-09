@@ -5,3 +5,6 @@
 html{
   height: 100vh;
 }
+body {
+    overscroll-behavior: none;
+}

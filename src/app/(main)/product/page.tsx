@@ -1,48 +1,22 @@
-'use client'
-import { useState } from "react";
-
-// Define a type for the product
-interface Product {
-  id: number;
-  name: string;
-  price: string;
-  imageUrl: string;
-}
-
-// Define the list of products
-const products: Product[] = [
-  { id: 1, name: "Basic Tee", price: "£24.00 GBP", imageUrl: "https://images.unsplash.com/photo-1523381210434-271e8be1f52b?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1770&q=80" },
-  { id: 2, name: "Basic Tee", price: "£24.00 GBP", imageUrl: "https://images.unsplash.com/photo-1523381210434-271e8be1f52b?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1770&q=80" },
-  { id: 3, name: "Basic Tee", price: "£24.00 GBP", imageUrl: "https://images.unsplash.com/photo-1523381210434-271e8be1f52b?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1770&q=80" },
-  { id: 4, name: "Basic Tee", price: "£24.00 GBP", imageUrl: "https://images.unsplash.com/photo-1523381210434-271e8be1f52b?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1770&q=80" },
-  { id: 1, name: "Basic Tee", price: "£24.00 GBP", imageUrl: "https://images.unsplash.com/photo-1523381210434-271e8be1f52b?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1770&q=80" },
-  { id: 2, name: "Basic Tee", price: "£24.00 GBP", imageUrl: "https://images.unsplash.com/photo-1523381210434-271e8be1f52b?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1770&q=80" },
-  { id: 3, name: "Basic Tee", price: "£24.00 GBP", imageUrl: "https://images.unsplash.com/photo-1523381210434-271e8be1f52b?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1770&q=80" },
-  { id: 4, name: "Basic Tee", price: "£24.00 GBP", imageUrl: "https://images.unsplash.com/photo-1523381210434-271e8be1f52b?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1770&q=80" },  { id: 1, name: "Basic Tee", price: "£24.00 GBP", imageUrl: "https://images.unsplash.com/photo-1523381210434-271e8be1f52b?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1770&q=80" },
-  { id: 2, name: "Basic Tee", price: "£24.00 GBP", imageUrl: "https://images.unsplash.com/photo-1523381210434-271e8be1f52b?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1770&q=80" },
-  { id: 3, name: "dd", price: "£24.00 GBP", imageUrl: "https://images.unsplash.com/photo-1523381210434-271e8be1f52b?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1770&q=80" },
-  { id: 4, name: "Basic Tee", price: "£24.00 GBP", imageUrl: "https://images.unsplash.com/photo-1523381210434-271e8be1f52b?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1770&q=80" },  { id: 1, name: "Basic Tee", price: "£24.00 GBP", imageUrl: "https://images.unsplash.com/photo-1523381210434-271e8be1f52b?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1770&q=80" },
-  { id: 2, name: "Basic Tee", price: "£24.00 GBP", imageUrl: "https://images.unsplash.com/photo-1523381210434-271e8be1f52b?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1770&q=80" },
-  { id: 3, name: "Basic Tee", price: "£24.00 GBP", imageUrl: "https://images.unsplash.com/photo-1523381210434-271e8be1f52b?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1770&q=80" },
-  { id: 4, name: "Basic Tee", price: "£24.00 GBP", imageUrl: "https://images.unsplash.com/photo-1523381210434-271e8be1f52b?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1770&q=80" },
-  // Add more products as needed
-];
-
+'use client';
+import { useState } from 'react';
+import { products } from '@/data/product'; // Import your products data
+import { useRouter } from 'next/navigation';
 const itemsPerPage = 4;
 
-export default function Page() {
-  // State for current page
+export default function ProductPage() {
   const [currentPage, setCurrentPage] = useState<number>(1);
-
-  // Calculate total pages
   const totalPages = Math.ceil(products.length / itemsPerPage);
+  const router = useRouter();
 
-  // Handle page change
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
   };
 
-  // Get products for current page
+  const handleBuyNow = (product: any) => {
+    router.push(`/checkout?id=${product.id}&name=${product.name}&price=${product.price}&imageUrl=${product.imageUrl}`);
+  };
+
   const displayedProducts = products.slice(
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
@@ -69,7 +43,7 @@ export default function Page() {
         <ul className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {displayedProducts.map((product) => (
             <li key={product.id}>
-              <a href="#" className="group block overflow-hidden">
+              <div className="group block overflow-hidden">
                 <img
                   src={product.imageUrl}
                   alt=""
@@ -85,8 +59,14 @@ export default function Page() {
                       {product.price}
                     </span>
                   </p>
+                  <button
+                    onClick={() => handleBuyNow(product)}
+                    className="mt-2 w-full rounded bg-black text-white p-2 text-center"
+                  >
+                    Buy Now
+                  </button>
                 </div>
-              </a>
+              </div>
             </li>
           ))}
         </ul>
@@ -118,8 +98,8 @@ export default function Page() {
                 onClick={() => handlePageChange(index + 1)}
                 className={`block size-8 rounded border ${
                   currentPage === index + 1
-                    ? "border-black bg-black text-white"
-                    : "border-gray-100"
+                    ? 'border-black bg-black text-white'
+                    : 'border-gray-100'
                 } text-center leading-8`}
               >
                 {index + 1}
@@ -141,7 +121,7 @@ export default function Page() {
               >
                 <path
                   fillRule="evenodd"
-                  d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
+                  d="M7.293 14.707a1 1 0 010-1.414L10.586 10l-3.293 3.293a1 1 0 01-1.414-1.414l4-4a1 1 0 010-1.414l-4-4a1 1 0 111.414 1.414L10.586 10l-3.293 3.293a1 1 0 000 1.414z"
                   clipRule="evenodd"
                 />
               </svg>
