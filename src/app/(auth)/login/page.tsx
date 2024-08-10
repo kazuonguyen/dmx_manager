@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 
 export default function Page() {
@@ -9,55 +9,34 @@ export default function Page() {
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
     const router = useRouter();
 
-    useEffect(() => {
-        // Initialize customers in localStorage if it doesn't exist
-        if (!localStorage.getItem('customers')) {
-            const initialCustomers = [
-                {"id":1,"name":"Alice Johnson","email":"alice@example.com","phone":"123-456-7890"},
-                {"id":2,"name":"Bob Smith","email":"bob@example.com","phone":"234-567-8901"},
-                {"id":3,"name":"Charlie Brown","email":"charlie@example.com","phone":"345-678-9012"}
-            ];
-            localStorage.setItem('customers', JSON.stringify(initialCustomers));
-        }
-    }, []);
-
-    const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         setErrorMessage(null); // Clear any existing error message
-        let role = 'user';
 
-        if (username === 'admin') {
-            if (password === 'admin') {
-                role = 'admin';
+        try {
+            const response = await fetch('/api/checkaccount', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ username, password }),
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                if (data.role === 'admin') {
+                    router.push('/admin');
+                } else if (data.role === 'user') {
+                    localStorage.setItem('customerInfo', JSON.stringify(data.customerInfo));
+                    router.push('/');
+                }
             } else {
-                setErrorMessage('Incorrect password for admin.');
-                return;
+                setErrorMessage(data.error || 'An error occurred');
             }
-        }
-
-        localStorage.setItem('role', role);
-
-        // Set customer info
-        const customerInfo = {
-            id: Math.floor(Math.random() * 1000) + 4, // Generate a random ID starting from 4
-            name: username,
-            email: `${username.toLowerCase()}@example.com`,
-            phone: Math.floor(Math.random() * 10000000000).toString().padStart(10, '0')
-        };
-        localStorage.setItem('customerInfo', JSON.stringify(customerInfo));
-
-        // Add customer to customers array if role is user
-        if (role === 'user') {
-            const customers = JSON.parse(localStorage.getItem('customers') || '[]');
-            customers.push(customerInfo);
-            localStorage.setItem('customers', JSON.stringify(customers));
-        }
-
-        // Redirect based on role
-        if (role === 'admin') {
-            router.push('/admin');
-        } else {
-            router.push('/user');
+        } catch (error) {
+            console.error('Error:', error);
+            setErrorMessage('An error occurred');
         }
     };
 
@@ -66,7 +45,7 @@ export default function Page() {
             <div className="sm:mx-auto sm:w-full sm:max-w-sm">
                 <img
                     className="mx-auto h-10 w-auto"
-                    src="https://tailwindui.com/img/logos/mark.svg?color=indigo&shade=600"
+                    src="https://thietkemyb.com.vn/wp-content/uploads/2022/10/foody-logo-dienmay-final-635947786757262452.jpg"
                     alt="Your Company"
                 />
                 <h2 className="mt-10 text-center text-2xl font-bold leading-9 tracking-tight text-gray-900">
@@ -80,7 +59,7 @@ export default function Page() {
                             htmlFor="username"
                             className="block text-sm font-medium leading-6 text-gray-900"
                         >
-                            Username
+                            Username (Ma KH)
                         </label>
                         <div className="mt-2">
                             <input
@@ -101,7 +80,7 @@ export default function Page() {
                                 htmlFor="password"
                                 className="block text-sm font-medium leading-6 text-gray-900"
                             >
-                                Password
+                                Password (Sdt KH)
                             </label>
                             <div className="text-sm">
                                 <a
@@ -137,7 +116,6 @@ export default function Page() {
                         </button>
                     </div>
                 </form>
-
             </div>
         </div>
     );
