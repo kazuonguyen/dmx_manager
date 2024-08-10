@@ -1,4 +1,5 @@
 'use client';
+import Menu from '@/components/Menu/Menu';
 import { useState, useEffect } from 'react';
 
 interface Customer {
@@ -41,13 +42,13 @@ const SalesRepDashboard: React.FC = () => {
     const storedOrders = localStorage.getItem('orders');
 
     if (storedCustomers && JSON.parse(storedCustomers).length > 0) {
-      console.log('Setting sample customers');
       setCustomers(JSON.parse(storedCustomers));
-    } 
+    } else {
+      setCustomers(sampleCustomers);
+      localStorage.setItem('customers', JSON.stringify(sampleCustomers));
+    }
 
     if (storedOrders && JSON.parse(storedOrders).length > 0) {
-      console.log('Setting sample orders');
-
       setOrders(JSON.parse(storedOrders));
     } else {
       setOrders(sampleOrders);
@@ -100,10 +101,33 @@ const SalesRepDashboard: React.FC = () => {
     );
   };
 
+  // New menu action handlers
+  const handleAddCustomer = () => {
+    // Placeholder function for adding a new customer
+    alert('Add Customer functionality to be implemented');
+  };
+
+  const handleManageProducts = () => {
+    // Placeholder function for managing products
+    alert('Manage Products functionality to be implemented');
+  };
+
+  const handleViewReports = () => {
+    // Placeholder function for viewing reports
+    alert('View Reports functionality to be implemented');
+  };
+
+  const handleSettings = () => {
+    // Placeholder function for settings
+    alert('Settings functionality to be implemented');
+  };
+
   return (
-    <div className='flex mt-12 justify-center items-center h-full w-full'>
+    <div className='flex flex-col mt-12 items-center w-full'>
       <div className="p-8 max-w-6xl mx-auto bg-gray-50 shadow-lg rounded-lg">
         <h1 className="text-3xl font-bold text-center text-gray-800 mb-8">Sales Representative Dashboard</h1>
+
+       <Menu />
 
         <div className="flex flex-col md:flex-row">
           <div className="md:w-1/3 md:mr-8">
@@ -209,7 +233,7 @@ const SalesRepDashboard: React.FC = () => {
                                 ? 'bg-yellow-100 text-yellow-800'
                                 : 'bg-green-100 text-green-800'
                             }`}
-                            >
+                          >
                             {order.status}
                           </span>
                         </td>
