@@ -1,5 +1,5 @@
-'use client'
-import { useState } from 'react';
+'use client';
+import { useState, useEffect } from 'react';
 
 interface Customer {
   id: number;
@@ -30,10 +30,39 @@ const sampleOrders: Order[] = [
 ];
 
 const SalesRepDashboard: React.FC = () => {
-  const [customers] = useState<Customer[]>(sampleCustomers);
-  const [orders, setOrders] = useState<Order[]>(sampleOrders);
+  const [customers, setCustomers] = useState<Customer[]>([]);
+  const [orders, setOrders] = useState<Order[]>([]);
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
   const [newOrder, setNewOrder] = useState<Partial<Order>>({});
+
+  // Load data from local storage on component mount
+  useEffect(() => {
+    const storedCustomers = localStorage.getItem('customers');
+    const storedOrders = localStorage.getItem('orders');
+
+    if (storedCustomers && JSON.parse(storedCustomers).length > 0) {
+      console.log('Setting sample customers');
+      setCustomers(JSON.parse(storedCustomers));
+    } 
+
+    if (storedOrders && JSON.parse(storedOrders).length > 0) {
+      console.log('Setting sample orders');
+
+      setOrders(JSON.parse(storedOrders));
+    } else {
+      setOrders(sampleOrders);
+      localStorage.setItem('orders', JSON.stringify(sampleOrders));
+    }
+  }, []);
+
+  // Save customers and orders to local storage whenever they are updated
+  useEffect(() => {
+    localStorage.setItem('customers', JSON.stringify(customers));
+  }, [customers]);
+
+  useEffect(() => {
+    localStorage.setItem('orders', JSON.stringify(orders));
+  }, [orders]);
 
   const handleCustomerSelect = (customer: Customer) => {
     setSelectedCustomer(customer);
@@ -64,9 +93,11 @@ const SalesRepDashboard: React.FC = () => {
   };
 
   const handleOrderConfirmation = (orderId: number) => {
-    setOrders(orders.map(order =>
-      order.id === orderId ? { ...order, status: 'Confirmed' } : order
-    ));
+    setOrders(
+      orders.map((order) =>
+        order.id === orderId ? { ...order, status: 'Confirmed' } : order
+      )
+    );
   };
 
   return (
@@ -84,7 +115,7 @@ const SalesRepDashboard: React.FC = () => {
                   onChange={(e) => handleCustomerSelect(JSON.parse(e.target.value))}
                 >
                   <option value="" selected disabled hidden>Choose customer</option>
-                  {customers.map(customer => (
+                  {customers.map((customer) => (
                     <option key={customer.id} value={JSON.stringify(customer)}>
                       {customer.name}
                     </option>
@@ -104,7 +135,10 @@ const SalesRepDashboard: React.FC = () => {
               <h2 className="text-2xl font-semibold text-gray-700 mb-4">New Order</h2>
               <form
                 className="bg-white p-6 rounded-lg shadow-md"
-                onSubmit={(e) => { e.preventDefault(); handleOrderSubmit(); }}
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  handleOrderSubmit();
+                }}
               >
                 <div className="grid grid-cols-1 gap-4 mb-6">
                   <input
@@ -159,15 +193,23 @@ const SalesRepDashboard: React.FC = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {orders.map(order => (
+                    {orders.map((order) => (
                       <tr key={order.id} className="border-b">
                         <td className="p-3">{order.id}</td>
-                        <td className="p-3">{customers.find(c => c.id === order.customerId)?.name}</td>
+                        <td className="p-3">
+                          {customers.find((c) => c.id === order.customerId)?.name}
+                        </td>
                         <td className="p-3">{order.product}</td>
                         <td className="p-3">{order.quantity}</td>
                         <td className="p-3">{order.price}</td>
                         <td className="p-3">
-                          <span className={`px-2 py-1 rounded-full text-xs font-semibold ${order.status === 'Pending' ? 'bg-yellow-100 text-yellow-800' : 'bg-green-100 text-green-800'}`}>
+                          <span
+                            className={`px-2 py-1 rounded-full text-xs font-semibold ${
+                              order.status === 'Pending'
+                                ? 'bg-yellow-100 text-yellow-800'
+                                : 'bg-green-100 text-green-800'
+                            }`}
+                            >
                             {order.status}
                           </span>
                         </td>
