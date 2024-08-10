@@ -1,7 +1,7 @@
 // pages/CustomerPage.tsx
 'use client';
 import { useState, useEffect } from 'react';
-
+import Menu from '@/components/Menu/Menu';
 interface Customer {
   id: number;
   name: string;
@@ -18,13 +18,8 @@ const CustomerPage: React.FC = () => {
     const storedCustomers = localStorage.getItem('customers');
     if (storedCustomers && JSON.parse(storedCustomers).length > 0) {
       setCustomers(JSON.parse(storedCustomers));
-    } else {
-      setCustomers([
-        { id: 1, name: 'Alice Johnson', email: 'alice@example.com', phone: '123-456-7890' },
-        { id: 2, name: 'Bob Smith', email: 'bob@example.com', phone: '234-567-8901' },
-        { id: 3, name: 'Charlie Brown', email: 'charlie@example.com', phone: '345-678-9012' },
-      ]);
-    }
+    } 
+    
   }, []);
 
   useEffect(() => {
@@ -63,7 +58,7 @@ const CustomerPage: React.FC = () => {
     <div className='flex mt-12 justify-center items-center h-full w-full'>
       <div className="p-8 max-w-6xl mx-auto bg-gray-50 shadow-lg rounded-lg">
         <h1 className="text-3xl font-bold text-center text-gray-800 mb-8">Customer List</h1>
-
+<Menu/>
         <div className="mb-6">
           <input
             type="text"

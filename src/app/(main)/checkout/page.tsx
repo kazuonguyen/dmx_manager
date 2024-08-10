@@ -1,11 +1,12 @@
 'use client';
-import { useRouter } from 'next/navigation'; // Import from 'next/navigation'
+import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
 export default function CheckoutPage() {
   const router = useRouter();
   const [product, setProduct] = useState<any>(null);
-  const [isPaymentInitiated, setIsPaymentInitiated] = useState<boolean>(false);
+  const [paymentStatus, setPaymentStatus] = useState<'pending' | 'processing' | 'success'>('pending');
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<string>('');
 
   useEffect(() => {
     const { searchParams } = new URL(window.location.href);
@@ -17,7 +18,6 @@ export default function CheckoutPage() {
     if (id && name && price && imageUrl) {
       setProduct({ id, name, price, imageUrl });
     } else {
-      // Redirect back to products page if no product details are found
       router.push('/');
     }
   }, [router]);
@@ -27,12 +27,35 @@ export default function CheckoutPage() {
   }
 
   const handlePayNow = () => {
-    setIsPaymentInitiated(true);
+    if (!selectedPaymentMethod) {
+      alert('Please select a payment method');
+      return;
+    }
+    setPaymentStatus('processing');
     // Simulate payment processing
     setTimeout(() => {
-      alert('Payment processing...');
-    }, 1000);
+      setPaymentStatus('success');
+      // Add order to localStorage
+      const customerInfo = JSON.parse(localStorage.getItem('customerInfo') || '{}');
+      const orders = JSON.parse(localStorage.getItem('orders') || '[]');
+      const newOrder = {
+        id: orders.length + 1,
+        customerId: customerInfo.id || 1, // Assuming customer ID is stored in customerInfo, otherwise default to 1
+        product: product.name,
+        quantity: 1,
+        price: parseFloat(product.price.replace('$', '')),
+        status: "Pending"
+      };
+      orders.push(newOrder);
+      localStorage.setItem('orders', JSON.stringify(orders));
+    }, 2000);
   };
+
+  const paymentMethods = [
+    { id: 'credit', name: 'Credit Card' },
+    { id: 'paypal', name: 'PayPal' },
+    { id: 'bank', name: 'Bank Transfer' }
+  ];
 
   return (
     <div className="flex min-h-screen flex-col bg-gray-100">
@@ -42,7 +65,7 @@ export default function CheckoutPage() {
             <h1 className="text-xl font-bold">Checkout</h1>
           </header>
           <div className="p-6">
-            {!isPaymentInitiated ? (
+            {paymentStatus === 'pending' && (
               <>
                 <div className="flex flex-col items-center mb-6">
                   <img
@@ -54,9 +77,22 @@ export default function CheckoutPage() {
                   <p className="text-gray-600">{product.price}</p>
                 </div>
                 <div className="border-t border-gray-200 py-4">
-                  <h3 className="text-md font-semibold text-gray-800">Billing Information</h3>
-                  <p className="mt-2 text-gray-600">Name: {product.name}</p>
-                  <p className="text-gray-600">Price: {product.price}</p>
+                  <h3 className="text-md font-semibold text-gray-800">Payment Method</h3>
+                  <div className="mt-2">
+                    {paymentMethods.map((method) => (
+                      <label key={method.id} className="flex items-center space-x-2 mb-2">
+                        <input
+                          type="radio"
+                          name="paymentMethod"
+                          value={method.id}
+                          checked={selectedPaymentMethod === method.id}
+                          onChange={(e) => setSelectedPaymentMethod(e.target.value)}
+                          className="form-radio"
+                        />
+                        <span>{method.name}</span>
+                      </label>
+                    ))}
+                  </div>
                 </div>
                 <div className="mt-6">
                   <button
@@ -67,19 +103,26 @@ export default function CheckoutPage() {
                   </button>
                 </div>
               </>
-            ) : (
+            )}
+            {paymentStatus === 'processing' && (
               <div className="text-center">
-                <h2 className="text-xl font-semibold text-gray-800">Billing Details</h2>
+                <h2 className="text-xl font-semibold text-gray-800">Processing Payment</h2>
+                <p className="mt-2">Please wait while we process your payment...</p>
+              </div>
+            )}
+            {paymentStatus === 'success' && (
+              <div className="text-center">
+                <h2 className="text-xl font-semibold text-green-600">Payment Successful!</h2>
                 <div className="mt-4">
-                  <p className="text-lg font-medium text-gray-800">Product Name: {product.name}</p>
-                  <p className="text-lg font-medium text-gray-800">Price: {product.price}</p>
-                  <p className="text-lg font-medium text-gray-800">Quantity: 1</p>
-                  <p className="text-lg font-medium text-gray-800">Total: {product.price}</p>
+                  <p className="text-lg font-medium text-gray-800">Product: {product.name}</p>
+                  <p className="text-lg font-medium text-gray-800">Total Paid: {product.price}</p>
+                  <p className="text-lg font-medium text-gray-800">Payment Method: {selectedPaymentMethod}</p>
+                  <p className="text-lg font-medium text-gray-800">Status: Pending</p>
                 </div>
                 <div className="mt-6">
                   <button
                     onClick={() => router.push('/')}
-                    className="w-full rounded bg-gray-600 px-4 py-2 text-white font-semibold hover:bg-gray-700 transition"
+                    className="w-full rounded bg-blue-600 px-4 py-2 text-white font-semibold hover:bg-blue-700 transition"
                   >
                     Back to Home
                   </button>
@@ -90,7 +133,7 @@ export default function CheckoutPage() {
         </div>
       </div>
       <footer className="bg-gray-200 text-center py-4 text-gray-600">
-        &copy; {new Date().getFullYear()} My E-Commerce Site
+        &copy; {new Date().getFullYear()} Trang Co United
       </footer>
     </div>
   );

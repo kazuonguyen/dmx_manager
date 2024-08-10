@@ -1,263 +1,178 @@
 'use client';
-import Menu from '@/components/Menu/Menu';
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 
-interface Customer {
-  id: number;
-  name: string;
-  email: string;
-  phone: string;
-}
+const itemsPerPage = 4;
 
-interface Order {
-  id: number;
-  customerId: number;
-  product: string;
-  quantity: number;
-  price: number;
-  status: string;
-}
+export default function ProductPage() {
+  const [products, setProducts] = useState<any[]>([]);
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const router = useRouter();
 
-const sampleCustomers: Customer[] = [
-  { id: 1, name: 'Alice Johnson', email: 'alice@example.com', phone: '123-456-7890' },
-  { id: 2, name: 'Bob Smith', email: 'bob@example.com', phone: '234-567-8901' },
-  { id: 3, name: 'Charlie Brown', email: 'charlie@example.com', phone: '345-678-9012' },
-];
-
-const sampleOrders: Order[] = [
-  { id: 1, customerId: 1, product: 'Laptop', quantity: 1, price: 1200, status: 'Pending' },
-  { id: 2, customerId: 2, product: 'Smartphone', quantity: 2, price: 800, status: 'Confirmed' },
-  { id: 3, customerId: 3, product: 'Headphones', quantity: 5, price: 150, status: 'Pending' },
-];
-
-const SalesRepDashboard: React.FC = () => {
-  const [customers, setCustomers] = useState<Customer[]>([]);
-  const [orders, setOrders] = useState<Order[]>([]);
-  const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
-  const [newOrder, setNewOrder] = useState<Partial<Order>>({});
-
-  // Load data from local storage on component mount
   useEffect(() => {
-    const storedCustomers = localStorage.getItem('customers');
-    const storedOrders = localStorage.getItem('orders');
-
-    if (storedCustomers && JSON.parse(storedCustomers).length > 0) {
-      setCustomers(JSON.parse(storedCustomers));
-    } else {
-      setCustomers(sampleCustomers);
-      localStorage.setItem('customers', JSON.stringify(sampleCustomers));
+    // Retrieve products from localStorage
+    let storedProducts = localStorage.getItem('products');
+    if (!storedProducts) {
+      // If no products found, add the sample products
+      const sampleProducts = [
+        {
+          id: 1,
+          name: 'Basic Tee',
+          price: '400',
+          imageUrl: 'https://images.unsplash.com/photo-1523381210434-271e8be1f52b?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1770&q=80',
+        },
+        {
+          id: 2,
+          name: 'Premium Hoodie',
+          price: '5400',
+          imageUrl: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRURqNO_jvzqiuoH3uHOWiykgDrnmP4vORCbQ&s',
+        },
+        {
+          id: 3,
+          name: 'Classic Denim Jacket',
+          price: '849',
+          imageUrl: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRbUp7lvlpyf-PWREKG7YccP8tty_Io-BXTbg&s',
+        },
+      ];
+      localStorage.setItem('products', JSON.stringify(sampleProducts));
+      storedProducts = JSON.stringify(sampleProducts);
     }
-
-    if (storedOrders && JSON.parse(storedOrders).length > 0) {
-      setOrders(JSON.parse(storedOrders));
-    } else {
-      setOrders(sampleOrders);
-      localStorage.setItem('orders', JSON.stringify(sampleOrders));
-    }
+    setProducts(JSON.parse(storedProducts));
   }, []);
 
-  // Save customers and orders to local storage whenever they are updated
-  useEffect(() => {
-    localStorage.setItem('customers', JSON.stringify(customers));
-  }, [customers]);
+  const totalPages = Math.ceil(products.length / itemsPerPage);
 
-  useEffect(() => {
-    localStorage.setItem('orders', JSON.stringify(orders));
-  }, [orders]);
-
-  const handleCustomerSelect = (customer: Customer) => {
-    setSelectedCustomer(customer);
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
   };
 
-  const handleOrderChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    setNewOrder({
-      ...newOrder,
-      [e.target.name]: e.target.value,
-    });
+  const handleBuyNow = (product: any) => {
+    router.push(`/checkout?id=${product.id}&name=${product.name}&price=${product.price}&imageUrl=${product.imageUrl}`);
   };
 
-  const handleOrderSubmit = () => {
-    if (selectedCustomer) {
-      const order: Order = {
-        id: orders.length + 1,
-        customerId: selectedCustomer.id,
-        product: newOrder.product || '',
-        quantity: Number(newOrder.quantity) || 1,
-        price: Number(newOrder.price) || 0,
-        status: 'Pending',
-      };
-      setOrders([...orders, order]);
-      setNewOrder({});
-    } else {
-      alert('Please select a customer');
-    }
+  const handleLogout = () => {
+    localStorage.removeItem('role');
+    router.push('/login');
   };
 
-  const handleOrderConfirmation = (orderId: number) => {
-    setOrders(
-      orders.map((order) =>
-        order.id === orderId ? { ...order, status: 'Confirmed' } : order
-      )
-    );
-  };
-
-  // New menu action handlers
-  const handleAddCustomer = () => {
-    // Placeholder function for adding a new customer
-    alert('Add Customer functionality to be implemented');
-  };
-
-  const handleManageProducts = () => {
-    // Placeholder function for managing products
-    alert('Manage Products functionality to be implemented');
-  };
-
-  const handleViewReports = () => {
-    // Placeholder function for viewing reports
-    alert('View Reports functionality to be implemented');
-  };
-
-  const handleSettings = () => {
-    // Placeholder function for settings
-    alert('Settings functionality to be implemented');
-  };
+  const displayedProducts = products.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
 
   return (
-    <div className='flex flex-col mt-12 items-center w-full'>
-      <div className="p-8 max-w-6xl mx-auto bg-gray-50 shadow-lg rounded-lg">
-        <h1 className="text-3xl font-bold text-center text-gray-800 mb-8">Sales Representative Dashboard</h1>
-
-       <Menu />
-
-        <div className="flex flex-col md:flex-row">
-          <div className="md:w-1/3 md:mr-8">
-            <section className="mb-10">
-              <h2 className="text-2xl font-semibold text-gray-700 mb-4">Customer Information</h2>
-              <div className="relative">
-                <select
-                  className="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                  onChange={(e) => handleCustomerSelect(JSON.parse(e.target.value))}
-                >
-                  <option value="" selected disabled hidden>Choose customer</option>
-                  {customers.map((customer) => (
-                    <option key={customer.id} value={JSON.stringify(customer)}>
-                      {customer.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              {selectedCustomer && (
-                <div className="mt-4 p-6 bg-white rounded-lg shadow-md">
-                  <p className="text-lg font-medium text-gray-900">Name: {selectedCustomer.name}</p>
-                  <p className="text-gray-700">Email: {selectedCustomer.email}</p>
-                  <p className="text-gray-700">Phone: {selectedCustomer.phone}</p>
-                </div>
-              )}
-            </section>
-
-            <section className="mb-10">
-              <h2 className="text-2xl font-semibold text-gray-700 mb-4">New Order</h2>
-              <form
-                className="bg-white p-6 rounded-lg shadow-md"
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  handleOrderSubmit();
-                }}
-              >
-                <div className="grid grid-cols-1 gap-4 mb-6">
-                  <input
-                    type="text"
-                    name="product"
-                    placeholder="Product"
-                    className="p-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                    value={newOrder.product || ''}
-                    onChange={handleOrderChange}
-                  />
-                  <input
-                    type="number"
-                    name="quantity"
-                    placeholder="Quantity"
-                    className="p-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                    value={newOrder.quantity || ''}
-                    onChange={handleOrderChange}
-                  />
-                  <input
-                    type="number"
-                    name="price"
-                    placeholder="Price"
-                    className="p-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                    value={newOrder.price || ''}
-                    onChange={handleOrderChange}
-                  />
-                </div>
-                <button
-                  type="submit"
-                  className="w-full py-3 bg-indigo-600 text-white rounded-lg shadow-md hover:bg-indigo-700 transition duration-300"
-                >
-                  Add Order
-                </button>
-              </form>
-            </section>
+    <section>
+      <div className="mx-auto max-w-screen-xl px-4 py-8 sm:px-6 sm:py-12 lg:px-8">
+        <header className="flex justify-between items-center">
+          <div>
+            <h2 className="text-xl font-bold text-gray-900 sm:text-3xl">
+              Product Collection
+            </h2>
+            <p className="mt-4 max-w-md text-gray-500">
+              Discover our exclusive product collection.
+            </p>
           </div>
-
-          <div className="md:w-2/3">
-            <section>
-              <h2 className="text-2xl font-semibold text-gray-700 mb-4">Orders</h2>
-              <div className="overflow-x-auto">
-                <table className="min-w-full bg-white rounded-lg shadow-md">
-                  <thead>
-                    <tr>
-                      <th className="p-3 text-left text-gray-700 font-medium border-b">Order ID</th>
-                      <th className="p-3 text-left text-gray-700 font-medium border-b">Customer</th>
-                      <th className="p-3 text-left text-gray-700 font-medium border-b">Product</th>
-                      <th className="p-3 text-left text-gray-700 font-medium border-b">Quantity</th>
-                      <th className="p-3 text-left text-gray-700 font-medium border-b">Price</th>
-                      <th className="p-3 text-left text-gray-700 font-medium border-b">Status</th>
-                      <th className="p-3 text-left text-gray-700 font-medium border-b">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {orders.map((order) => (
-                      <tr key={order.id} className="border-b">
-                        <td className="p-3">{order.id}</td>
-                        <td className="p-3">
-                          {customers.find((c) => c.id === order.customerId)?.name}
-                        </td>
-                        <td className="p-3">{order.product}</td>
-                        <td className="p-3">{order.quantity}</td>
-                        <td className="p-3">{order.price}</td>
-                        <td className="p-3">
-                          <span
-                            className={`px-2 py-1 rounded-full text-xs font-semibold ${
-                              order.status === 'Pending'
-                                ? 'bg-yellow-100 text-yellow-800'
-                                : 'bg-green-100 text-green-800'
-                            }`}
-                          >
-                            {order.status}
-                          </span>
-                        </td>
-                        <td className="p-3">
-                          {order.status === 'Pending' && (
-                            <button
-                              onClick={() => handleOrderConfirmation(order.id)}
-                              className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition duration-300"
-                            >
-                              Confirm
-                            </button>
-                          )}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </section>
-          </div>
+          <button
+            onClick={handleLogout}
+            className="rounded bg-red-600 text-white px-4 py-2"
+          >
+            Logout
+          </button>
+        </header>
+        <div className="mt-8">
+          <p className="text-sm text-gray-500">
+            Showing <span>{displayedProducts.length}</span> of {products.length}
+          </p>
         </div>
+        <ul className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {displayedProducts.map((product) => (
+            <li key={product.id}>
+              <div className="group block overflow-hidden">
+                <img
+                  src={product.imageUrl}
+                  alt={product.name}
+                  className="h-[350px] w-full object-cover transition duration-500 group-hover:scale-105 sm:h-[450px]"
+                />
+                <div className="relative bg-white pt-3">
+                  <h3 className="text-xs text-gray-700 group-hover:underline group-hover:underline-offset-4">
+                    {product.name}
+                  </h3>
+                  <p className="mt-2">
+                    <span className="sr-only"> Regular Price </span>
+                    <span className="tracking-wider text-gray-900">
+                      {product.price}
+                    </span>
+                  </p>
+                  <button
+                    onClick={() => handleBuyNow(product)}
+                    className="mt-2 w-full rounded bg-black text-white p-2 text-center"
+                  >
+                    Buy Now
+                  </button>
+                </div>
+              </div>
+            </li>
+          ))}
+        </ul>
+        <ol className="mt-8 flex justify-center gap-1 text-xs font-medium">
+          <li>
+            <button
+              onClick={() => handlePageChange(currentPage - 1)}
+              disabled={currentPage === 1}
+              className="inline-flex size-8 items-center justify-center rounded border border-gray-100"
+            >
+              <span className="sr-only">Prev Page</span>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-3 w-3"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z"
+                  clipRule="evenodd"
+                />
+              </svg>
+            </button>
+          </li>
+          {[...Array(totalPages)].map((_, index) => (
+            <li key={index}>
+              <button
+                onClick={() => handlePageChange(index + 1)}
+                className={`block size-8 rounded border ${
+                  currentPage === index + 1
+                    ? 'border-black bg-black text-white'
+                    : 'border-gray-100'
+                } text-center leading-8`}
+              >
+                {index + 1}
+              </button>
+            </li>
+          ))}
+          <li>
+            <button
+              onClick={() => handlePageChange(currentPage + 1)}
+              disabled={currentPage === totalPages}
+              className="inline-flex size-8 items-center justify-center rounded border border-gray-100"
+            >
+              <span className="sr-only">Next Page</span>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-3 w-3"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M7.293 14.707a1 1 0 010-1.414L10.586 10l-3.293 3.293a1 1 0 01-1.414-1.414l4-4a1 1 0 010-1.414l-4-4a1 1 0 111.414 1.414L10.586 10l-3.293 3.293a1 1 0 000 1.414z"
+                  clipRule="evenodd"
+                />
+              </svg>
+            </button>
+          </li>
+        </ol>
       </div>
-    </div>
+    </section>
   );
-};
-
-export default SalesRepDashboard;
+}
